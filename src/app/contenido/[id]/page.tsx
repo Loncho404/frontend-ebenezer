@@ -15,7 +15,7 @@ import {
 } from '@/lib/api'
 
 type Categoria = {
-  id?: number
+  id: number
   nombre: string
 }
 
