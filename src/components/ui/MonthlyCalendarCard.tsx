@@ -14,9 +14,15 @@ export default function MonthlyCalendarCard({
   const backendUrl =
     process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
-  const imageUrl = imagen.startsWith('http')
-    ? imagen
-    : `${backendUrl}${imagen}`
+  let imageUrl = imagen
+
+  if (imagen.startsWith('http')) {
+    imageUrl = imagen
+  } else if (imagen.startsWith('/calendarios')) {
+    imageUrl = imagen
+  } else {
+    imageUrl = `${backendUrl}${imagen}`
+  }
 
   return (
     <section className="mx-auto max-w-4xl rounded-[24px] border border-gray-200 bg-white p-4 shadow-sm sm:rounded-[28px] sm:p-6">
