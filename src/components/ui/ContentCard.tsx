@@ -1,5 +1,14 @@
 'use client'
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faFilePdf,
+  faArrowUpRightFromSquare,
+  faLock,
+} from '@fortawesome/free-solid-svg-icons'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
+
 type Categoria = {
   id: number
   nombre: string
@@ -47,67 +56,70 @@ export default function ContentCard({
   const embedUrl = getYoutubeEmbedUrl(youtubeUrl)
 
   return (
-    <article className="overflow-hidden rounded-[24px] border border-gray-200 bg-white shadow-sm sm:rounded-[28px]">
-      <div className="p-4 sm:p-6 lg:p-8">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="max-w-3xl">
-            <h3 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
+    <article className="overflow-hidden rounded-[var(--radius-xl)] border border-line bg-surface-elevated shadow-[var(--shadow-card)]">
+      <div className="p-6 sm:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
+            {categoria && (
+              <Badge variant="brand" size="md" className="mb-3">
+                {categoria.nombre}
+              </Badge>
+            )}
+
+            <h3 className="text-xl font-bold tracking-tight text-ink sm:text-2xl">
               {titulo}
             </h3>
 
-            <p className="mt-3 text-sm leading-7 text-gray-600">
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-ink-muted">
               {descripcion}
             </p>
           </div>
-
-          {categoria && (
-            <span className="w-fit rounded-full bg-orange-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-orange-700">
-              {categoria.nombre}
-            </span>
-          )}
         </div>
 
         {embedUrl && (
-          <div className="mb-6 overflow-hidden rounded-[20px] border border-gray-200 bg-black sm:rounded-[24px]">
-            <iframe
-              width="100%"
-              height="220"
-              src={embedUrl}
-              title={titulo}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="sm:h-[320px] lg:h-[420px]"
-            />
+          <div className="mt-6 overflow-hidden rounded-[var(--radius-lg)] border border-line bg-black">
+            <div className="aspect-video w-full">
+              <iframe
+                src={embedUrl}
+                title={titulo}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="h-full w-full"
+              />
+            </div>
           </div>
         )}
+      </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          {canDownloadPdf ? (
-            <button
-              type="button"
-              onClick={() => onDownloadPdf(contenidoId)}
-              className="inline-flex w-full items-center justify-center rounded-full bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 sm:w-fit"
-            >
-              Descargar PDF
-            </button>
-          ) : (
-            <p className="text-sm text-gray-500">
-              No tienes permisos para descargar este PDF.
-            </p>
-          )}
+      <div className="flex flex-col gap-3 border-t border-line bg-surface-muted/40 px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        {canDownloadPdf ? (
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => onDownloadPdf(contenidoId)}
+            leftIcon={<FontAwesomeIcon icon={faFilePdf} />}
+          >
+            Descargar PDF
+          </Button>
+        ) : (
+          <p className="inline-flex items-center gap-2 text-sm text-ink-subtle">
+            <FontAwesomeIcon icon={faLock} className="text-xs" />
+            No tienes permisos para descargar el PDF.
+          </p>
+        )}
 
-          {youtubeUrl && (
-            <a
-              href={youtubeUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="text-center text-sm font-semibold text-gray-700 hover:text-gray-900 sm:text-left"
-            >
-              Ver en YouTube
-            </a>
-          )}
-        </div>
+        {youtubeUrl && (
+          <a
+            href={youtubeUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-ink-muted transition-colors hover:text-brand-600"
+          >
+            Ver en YouTube
+            <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-xs" />
+          </a>
+        )}
       </div>
     </article>
   )

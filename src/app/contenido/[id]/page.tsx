@@ -5,6 +5,9 @@ import { useParams } from 'next/navigation'
 import ContentCard from '@/components/ui/ContentCard'
 import CommentsSection from '@/components/ui/CommentsSection'
 import Breadcrumbs from '@/components/ui/Breadcrumbs'
+import Hero from '@/components/ui/Hero'
+import Alert from '@/components/ui/Alert'
+import Skeleton from '@/components/ui/Skeleton'
 import {
   getContenidoPorTema,
   getMe,
@@ -145,10 +148,7 @@ export default function ContenidoPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      {/* ===========
-      Breadcrumbs
-      =========== */}
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <Breadcrumbs
         items={[
           { label: 'Inicio', href: '/' },
@@ -157,61 +157,36 @@ export default function ContenidoPage() {
         ]}
       />
 
-      {/* ===========
-      Hero
-      =========== */}
-      <section className="mb-6 rounded-[28px] bg-gradient-to-r from-[#182235] via-[#24324a] to-[#50607a] px-6 py-8 shadow-sm sm:rounded-[32px] sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-        <div className="max-w-3xl">
-          <p className="text-sm font-medium text-orange-300">
-            Contenido del tema
-          </p>
+      <Hero
+        eyebrow="Contenido del tema"
+        title={contenido?.titulo ?? 'Visualización de contenido'}
+        description="Revisa el video, la descripción del tema y descarga el PDF si tienes acceso autorizado."
+      />
 
-          <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
-            Visualización de contenido
-          </h1>
-
-          <p className="mt-4 text-sm leading-7 text-slate-200 sm:text-base">
-            Aquí podrás revisar el video, la descripción del tema y descargar
-            el PDF si tienes acceso autorizado.
-          </p>
-        </div>
-      </section>
-
-      {/* ===========
-      Mensajes de descarga
-      =========== */}
       {downloadMessage && (
-        <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-          {downloadMessage}
+        <div className="mb-6">
+          <Alert variant="success">{downloadMessage}</Alert>
         </div>
       )}
 
       {downloadError && (
-        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-          {downloadError}
+        <div className="mb-6">
+          <Alert variant="error">{downloadError}</Alert>
         </div>
       )}
 
-      {/* ===========
-      Estados
-      =========== */}
       {loading ? (
-        <div className="rounded-[24px] border border-gray-200 bg-white p-5 shadow-sm">
-          Cargando contenido...
-        </div>
+        <Skeleton.Content />
       ) : error ? (
-        <div className="rounded-[24px] border border-red-200 bg-white p-5 shadow-sm">
-          <p className="font-medium text-red-600">{error}</p>
-        </div>
+        <Alert variant="error" title="No se pudo cargar el contenido">
+          {error}
+        </Alert>
       ) : !contenido ? (
-        <div className="rounded-[24px] border border-gray-200 bg-white p-5 shadow-sm">
-          No se encontró el contenido.
-        </div>
+        <Alert variant="warning" title="Contenido no encontrado">
+          No se encontró el contenido solicitado.
+        </Alert>
       ) : (
         <>
-          {/* ===========
-          Contenido principal
-          =========== */}
           <ContentCard
             contenidoId={contenido.id}
             titulo={contenido.titulo}
@@ -224,9 +199,6 @@ export default function ContenidoPage() {
             onDownloadPdf={handleDownloadPdf}
           />
 
-          {/* ===========
-          Comentarios
-          =========== */}
           <CommentsSection
             comentarios={comentarios}
             isLoggedIn={!!user}

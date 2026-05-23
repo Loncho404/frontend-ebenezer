@@ -2,6 +2,39 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faHouse, faBookOpen } from '@fortawesome/free-solid-svg-icons'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+
+type ItemProps = {
+  href: string
+  icon: IconDefinition
+  label: string
+  active: boolean
+}
+
+function SidebarItem({ href, icon, label, active }: ItemProps) {
+  const base =
+    'flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-medium transition-all duration-150'
+  const stateCls = active
+    ? 'bg-surface-elevated text-ink shadow-[var(--shadow-card)] ring-1 ring-inset ring-line'
+    : 'text-ink-muted hover:bg-surface-elevated hover:text-ink'
+
+  return (
+    <Link href={href} className={`${base} ${stateCls}`}>
+      <span
+        className={`flex h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] text-xs transition-colors ${
+          active
+            ? 'bg-brand-50 text-brand-600 ring-1 ring-inset ring-brand-100'
+            : 'bg-surface-muted text-ink-subtle'
+        }`}
+      >
+        <FontAwesomeIcon icon={icon} />
+      </span>
+      {label}
+    </Link>
+  )
+}
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -11,43 +44,38 @@ export default function Sidebar() {
     pathname.startsWith('/corderitos') || pathname.startsWith('/contenido')
 
   return (
-    <aside className="hidden w-60 shrink-0 border-r border-gray-200 bg-[#f7f7f8] px-4 py-6 lg:block">
-      <p className="mb-6 text-xs font-semibold uppercase tracking-[0.25em] text-gray-400">
+    <aside className="hidden w-64 shrink-0 border-r border-line bg-surface px-4 py-8 lg:block">
+      <p className="mb-4 px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-subtle">
         Navegación
       </p>
 
-      <nav className="space-y-3">
-        <Link
+      <nav className="space-y-1">
+        <SidebarItem
           href="/"
-          className={`block rounded-2xl px-4 py-3 text-sm font-medium transition ${
-            isInicio
-              ? 'bg-orange-50 text-gray-900'
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-          }`}
-        >
-          Inicio
-        </Link>
+          icon={faHouse}
+          label="Inicio"
+          active={isInicio}
+        />
 
-        <Link
+        <SidebarItem
           href="/corderitos"
-          className={`block rounded-2xl px-4 py-3 text-sm font-medium transition ${
-            isCorderitos
-              ? 'bg-orange-50 text-gray-900'
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-          }`}
-        >
-          Corderitos
-        </Link>
+          icon={faBookOpen}
+          label="Corderitos"
+          active={isCorderitos}
+        />
       </nav>
 
-      <div className="mt-10 rounded-[24px] border border-gray-200 bg-white p-5 shadow-sm">
-        <h3 className="text-base font-semibold text-gray-900">
+      <div className="mt-8 rounded-[var(--radius-xl)] border border-line bg-surface-elevated p-5 shadow-[var(--shadow-card)]">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-600">
           Sección activa
+        </p>
+        <h3 className="mt-2 text-sm font-semibold text-ink">
+          {isInicio ? 'Inicio' : 'Corderitos'}
         </h3>
-        <p className="mt-3 text-sm leading-7 text-gray-600">
+        <p className="mt-2 text-xs leading-5 text-ink-muted">
           {isInicio
             ? 'Resumen y acceso rápido a la plataforma.'
-            : 'Aquí se organizan niveles, temas y contenidos de Corderitos.'}
+            : 'Aquí se organizan niveles, temas y contenidos.'}
         </p>
       </div>
     </aside>

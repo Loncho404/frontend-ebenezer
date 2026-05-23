@@ -1,3 +1,6 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCalendarDays } from '@fortawesome/free-solid-svg-icons'
+
 type MonthlyCalendarCardProps = {
   titulo: string
   imagen: string
@@ -25,22 +28,28 @@ export default function MonthlyCalendarCard({
   }
 
   return (
-    <section className="mx-auto max-w-4xl rounded-[24px] border border-gray-200 bg-white p-4 shadow-sm sm:rounded-[28px] sm:p-6">
-      <div className="mb-4">
-        <p className="text-sm font-medium text-gray-500">Calendario del mes</p>
-        <h2 className="mt-2 text-xl font-bold text-gray-900 sm:text-2xl">
-          {titulo}
-        </h2>
-        <p className="mt-1 text-sm text-gray-500">
+    <section className="mx-auto max-w-4xl rounded-[var(--radius-xl)] border border-line bg-surface-elevated p-6 shadow-[var(--shadow-card)] sm:p-8">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-600">
+            Calendario del mes
+          </p>
+          <h2 className="mt-2 text-xl font-bold text-ink sm:text-2xl">
+            {titulo}
+          </h2>
+        </div>
+
+        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-line bg-surface-muted px-3 py-1.5 text-xs font-semibold text-ink-muted">
+          <FontAwesomeIcon icon={faCalendarDays} className="text-brand-600" />
           {mesNombre} {anio}
-        </p>
+        </span>
       </div>
 
-      <div className="flex justify-center overflow-hidden rounded-[18px] border border-gray-200 bg-gray-50 p-3 sm:rounded-[20px] sm:p-4">
+      <div className="flex justify-center overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface-muted p-4">
         <img
           src={imageUrl}
           alt={titulo}
-          className="mx-auto h-auto max-h-[260px] w-auto object-contain sm:max-h-[360px] lg:max-h-[500px]"
+          className="mx-auto h-auto max-h-[280px] w-auto object-contain sm:max-h-[400px] lg:max-h-[520px]"
         />
       </div>
     </section>

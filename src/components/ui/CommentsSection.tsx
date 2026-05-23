@@ -1,6 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faCommentDots,
+  faShield,
+  faPaperPlane,
+  faReply,
+  faXmark,
+} from '@fortawesome/free-solid-svg-icons'
+import Button from '@/components/ui/Button'
+import Textarea from '@/components/ui/Textarea'
+import Alert from '@/components/ui/Alert'
+import Badge from '@/components/ui/Badge'
 
 type Comentario = {
   id: number
@@ -17,6 +29,15 @@ type CommentsSectionProps = {
   isAdmin: boolean
   onSubmitComment: (mensaje: string) => Promise<void>
   onReplyComment: (comentarioId: number, respuesta: string) => Promise<void>
+}
+
+function getInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? '')
+    .join('')
 }
 
 export default function CommentsSection({
@@ -96,136 +117,149 @@ export default function CommentsSection({
   }
 
   return (
-    <section className="mt-8 rounded-[24px] border border-gray-200 bg-white p-4 shadow-sm sm:rounded-[28px] sm:p-6">
-      <div className="mb-6">
-        <p className="text-sm font-medium text-orange-600">Interacción</p>
-        <h2 className="mt-2 text-xl font-bold text-gray-900 sm:text-2xl">
-          Comentarios
-        </h2>
-        <p className="mt-2 text-sm text-gray-600">
-          Aquí los usuarios podrán dejar preguntas o comentarios sobre esta clase.
-        </p>
+    <section className="mt-8 rounded-[var(--radius-xl)] border border-line bg-surface-elevated p-6 shadow-[var(--shadow-card)] sm:p-8">
+      <div className="mb-6 flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-brand-50 text-brand-600 ring-1 ring-inset ring-brand-100">
+          <FontAwesomeIcon icon={faCommentDots} />
+        </span>
+
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-600">
+            Interacción
+          </p>
+          <h2 className="mt-1 text-xl font-bold text-ink sm:text-2xl">
+            Comentarios
+          </h2>
+          <p className="mt-1 text-sm text-ink-muted">
+            Deja una pregunta o comentario sobre esta clase.
+          </p>
+        </div>
       </div>
 
       <div className="mb-6 space-y-4">
         {comentarios.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-4 sm:p-5">
-            <p className="text-sm text-gray-500">
-              Todavía no hay comentarios publicados para este contenido.
+          <div className="rounded-[var(--radius-lg)] border border-dashed border-line-strong bg-surface-muted/50 px-6 py-8 text-center">
+            <p className="text-sm text-ink-muted">
+              Todavía no hay comentarios publicados.
             </p>
           </div>
         ) : (
           comentarios.map((comentario) => (
-            <div
+            <article
               key={comentario.id}
-              className="rounded-2xl border border-gray-200 bg-gray-50 p-4 sm:p-5"
+              className="rounded-[var(--radius-lg)] border border-line bg-surface p-5"
             >
-              <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm font-semibold text-gray-900 break-words">
-                  {comentario.usuario_nombre}
-                </p>
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold uppercase text-brand-700 ring-2 ring-inset ring-surface-elevated">
+                  {getInitials(comentario.usuario_nombre)}
+                </span>
 
-                <p className="text-xs text-gray-500">
-                  {new Date(comentario.fecha_creacion).toLocaleString()}
-                </p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+                    <p className="break-words text-sm font-semibold text-ink">
+                      {comentario.usuario_nombre}
+                    </p>
+
+                    <p className="text-xs text-ink-subtle">
+                      {new Date(comentario.fecha_creacion).toLocaleString()}
+                    </p>
+                  </div>
+
+                  <p className="mt-2 text-sm leading-6 text-ink-muted">
+                    {comentario.mensaje}
+                  </p>
+                </div>
               </div>
 
-              <p className="text-sm leading-6 text-gray-700">
-                {comentario.mensaje}
-              </p>
-
               {comentario.respuesta && (
-                <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-orange-700">
-                    Respuesta del administrador
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-gray-700">
+                <div className="mt-4 rounded-[var(--radius-md)] border-l-4 border-brand-400 bg-brand-50/60 p-4">
+                  <Badge variant="brand" size="sm" className="mb-2">
+                    <FontAwesomeIcon icon={faShield} className="text-[9px]" />
+                    Respuesta del admin
+                  </Badge>
+                  <p className="mt-1 text-sm leading-6 text-ink">
                     {comentario.respuesta}
                   </p>
                 </div>
               )}
 
               {isAdmin && !comentario.respuesta && (
-                <div className="mt-4">
+                <div className="mt-4 border-t border-line pt-4">
                   <button
                     type="button"
                     onClick={() => toggleReplyBox(comentario.id)}
-                    className="text-sm font-semibold text-orange-600 hover:text-orange-700"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 transition-colors hover:text-brand-700"
                   >
+                    <FontAwesomeIcon
+                      icon={replyOpenId === comentario.id ? faXmark : faReply}
+                      className="text-xs"
+                    />
                     {replyOpenId === comentario.id
                       ? 'Cancelar respuesta'
-                      : 'Responder como administrador'}
+                      : 'Responder como admin'}
                   </button>
 
                   {replyOpenId === comentario.id && (
-                    <div className="mt-3 space-y-3 rounded-2xl border border-orange-200 bg-white p-4">
-                      <textarea
+                    <div className="mt-4 space-y-3 rounded-[var(--radius-md)] border border-brand-100 bg-brand-50/40 p-4">
+                      <Textarea
                         rows={4}
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder="Escribe la respuesta del administrador..."
-                        className="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-orange-400"
                       />
 
                       {replyError && (
-                        <p className="text-sm text-red-600">{replyError}</p>
+                        <Alert variant="error">{replyError}</Alert>
                       )}
 
-                      <button
-                        type="button"
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        loading={replyLoading}
                         onClick={() => handleReplySubmit(comentario.id)}
-                        disabled={replyLoading}
-                        className="w-full rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-60 sm:w-fit"
+                        leftIcon={<FontAwesomeIcon icon={faPaperPlane} />}
                       >
-                        {replyLoading ? 'Respondiendo...' : 'Guardar respuesta'}
-                      </button>
+                        Guardar respuesta
+                      </Button>
                     </div>
                   )}
                 </div>
               )}
-            </div>
+            </article>
           ))
         )}
       </div>
 
       {!isLoggedIn ? (
-        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-          <p className="text-sm text-gray-600">
-            Debes iniciar sesión para comentar.
-          </p>
-        </div>
+        <Alert variant="info">
+          Debes iniciar sesión para publicar comentarios.
+        </Alert>
       ) : canComment ? (
-        <div className="space-y-4">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">
-              Escribe tu comentario
-            </label>
-            <textarea
-              rows={5}
-              value={mensaje}
-              onChange={(e) => setMensaje(e.target.value)}
-              placeholder="Escribe aquí tu comentario o pregunta..."
-              className="w-full rounded-2xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-orange-400"
-            />
-          </div>
+        <div className="space-y-4 border-t border-line pt-6">
+          <Textarea
+            label="Escribe tu comentario"
+            rows={5}
+            value={mensaje}
+            onChange={(e) => setMensaje(e.target.value)}
+            placeholder="Comparte tu pregunta o comentario..."
+          />
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <Alert variant="error">{error}</Alert>}
 
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="md"
+            loading={loading}
             onClick={handleSubmit}
-            disabled={loading}
-            className="w-full rounded-full bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60 sm:w-fit"
+            leftIcon={<FontAwesomeIcon icon={faPaperPlane} />}
           >
-            {loading ? 'Publicando...' : 'Publicar comentario'}
-          </button>
+            Publicar comentario
+          </Button>
         </div>
       ) : (
-        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-          <p className="text-sm text-gray-600">
-            Tu usuario no tiene permisos para comentar en este contenido.
-          </p>
-        </div>
+        <Alert variant="warning">
+          Tu usuario no tiene permisos para comentar en este contenido.
+        </Alert>
       )}
     </section>
   )

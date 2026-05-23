@@ -2,9 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import Link from 'next/link'
+import { faBookOpen } from '@fortawesome/free-solid-svg-icons'
 import { getTemasPorNivel } from '@/lib/api'
 import Breadcrumbs from '@/components/ui/Breadcrumbs'
+import Hero from '@/components/ui/Hero'
+import NavItemCard from '@/components/ui/NavItemCard'
+import Alert from '@/components/ui/Alert'
+import EmptyState from '@/components/ui/EmptyState'
+import Skeleton from '@/components/ui/Skeleton'
 
 type Tema = {
   id: number
@@ -46,7 +51,7 @@ export default function NivelPage() {
   }, [nivelId])
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <Breadcrumbs
         items={[
           { label: 'Inicio', href: '/' },
@@ -54,67 +59,37 @@ export default function NivelPage() {
           { label: `Nivel ${nivelId}` },
         ]}
       />
-      {/* ===========
-      Encabezado de la vista de temas
-      =========== */}
-      <section className="mb-8 rounded-[28px] bg-gradient-to-r from-[#182235] via-[#24324a] to-[#50607a] px-6 py-8 shadow-sm sm:rounded-[32px] sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-        <div className="max-w-3xl">
-          <p className="text-sm font-medium text-orange-300">
-            Nivel seleccionado
-          </p>
 
-          <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
-            Temas del nivel {nivelId}
-          </h1>
+      <Hero
+        eyebrow="Nivel seleccionado"
+        title={`Temas del nivel ${nivelId}`}
+        description="Selecciona un tema para ver su contenido completo: video, descripción y descarga de PDF."
+      />
 
-          <p className="mt-4 text-sm leading-7 text-slate-200 sm:text-base">
-            Selecciona un tema para ver su contenido completo, incluyendo video,
-            descripción y descarga de PDF.
-          </p>
-        </div>
-      </section>
-
-      {/* ===========
-      Estados de carga, error o listado de temas
-      =========== */}
       {loading ? (
-        <div className="rounded-[24px] border border-gray-200 bg-white p-5 shadow-sm sm:rounded-[28px] sm:p-6">
-          Cargando temas...
-        </div>
+        <Skeleton.Grid count={6} />
       ) : error ? (
-        <div className="rounded-[24px] border border-red-200 bg-white p-5 shadow-sm sm:rounded-[28px] sm:p-6">
-          <p className="font-medium text-red-600">{error}</p>
-        </div>
+        <Alert variant="error" title="No se pudieron cargar los temas">
+          {error}
+        </Alert>
       ) : temas.length === 0 ? (
-        <div className="rounded-[24px] border border-gray-200 bg-white p-5 shadow-sm sm:rounded-[28px] sm:p-6">
-          No hay temas disponibles para este nivel.
-        </div>
+        <EmptyState
+          icon={faBookOpen}
+          title="No hay temas disponibles"
+          description="Este nivel aún no tiene temas publicados."
+        />
       ) : (
-        <div className="grid gap-5 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {temas.map((tema) => (
-            <Link
+            <NavItemCard
               key={tema.id}
+              orden={tema.orden}
+              eyebrow="Tema"
+              title={tema.nombre}
+              description="Haz clic para revisar el contenido asociado a este tema."
               href={`/contenido/${tema.id}`}
-              className="group rounded-[24px] border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md sm:rounded-[28px] sm:p-6"
-            >
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-sm font-bold text-orange-600 sm:h-12 sm:w-12 sm:text-base">
-                {tema.orden}
-              </div>
-
-              <p className="text-sm font-medium text-orange-600">Tema</p>
-
-              <h2 className="mt-2 text-xl font-bold text-gray-900 sm:text-2xl">
-                {tema.nombre}
-              </h2>
-
-              <p className="mt-3 text-sm leading-6 text-gray-600">
-                Haz clic para revisar el contenido asociado a este tema.
-              </p>
-
-              <div className="mt-6 text-sm font-semibold text-gray-700 group-hover:text-orange-600">
-                Ver contenido →
-              </div>
-            </Link>
+              cta="Ver contenido"
+            />
           ))}
         </div>
       )}

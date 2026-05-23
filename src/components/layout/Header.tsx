@@ -6,7 +6,14 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { getMe } from '@/lib/api'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faXmark } from '@fortawesome/free-solid-svg-icons'
+import {
+  faBars,
+  faXmark,
+  faHouse,
+  faBookOpen,
+} from '@fortawesome/free-solid-svg-icons'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import Button from '@/components/ui/Button'
 
 type UserMe = {
   id: number
@@ -16,6 +23,34 @@ type UserMe = {
   puede_descargar_pdfs: boolean
   puede_comentar: boolean
   activo_en_plataforma: boolean
+}
+
+type NavLinkProps = {
+  href: string
+  icon: IconDefinition
+  active: boolean
+  children: React.ReactNode
+  onClick?: () => void
+  block?: boolean
+}
+
+function NavLink({ href, icon, active, children, onClick, block }: NavLinkProps) {
+  const base =
+    'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-150'
+  const blockCls = block ? 'flex w-full justify-start' : ''
+  const stateCls = active
+    ? 'bg-ink/5 text-ink ring-1 ring-inset ring-ink/5'
+    : 'text-ink-muted hover:bg-ink/5 hover:text-ink'
+
+  return (
+    <Link href={href} onClick={onClick} className={`${base} ${blockCls} ${stateCls}`}>
+      <FontAwesomeIcon
+        icon={icon}
+        className={`text-xs ${active ? 'text-brand-600' : 'text-ink-subtle'}`}
+      />
+      {children}
+    </Link>
+  )
 }
 
 export default function Header() {
@@ -80,65 +115,43 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
-        <div className="flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center">
+      <header className="sticky top-0 z-50 border-b border-line bg-surface-elevated/85 backdrop-blur supports-[backdrop-filter]:bg-surface-elevated/70">
+        <div className="mx-auto flex h-[var(--header-h)] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-center gap-2">
             <Image
               src="/logoheader.png"
               alt="Ebenezer San Bernardo"
-              width={120}
-              height={120}
-              className="h-16 w-auto object-contain sm:h-20"
+              width={160}
+              height={48}
+              className="h-10 w-auto object-contain sm:h-12"
+              priority
             />
           </Link>
 
-          <nav className="hidden items-center gap-4 md:flex lg:gap-8">
-            <Link
-              href="/"
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                isInicio
-                  ? 'bg-orange-50 text-gray-900'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
+          <nav className="hidden items-center gap-1 md:flex">
+            <NavLink href="/" icon={faHouse} active={isInicio}>
               Inicio
-            </Link>
+            </NavLink>
 
-            <Link
-              href="/corderitos"
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                isCorderitos
-                  ? 'bg-orange-50 text-gray-900'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
+            <NavLink href="/corderitos" icon={faBookOpen} active={isCorderitos}>
               Corderitos
-            </Link>
+            </NavLink>
           </nav>
 
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden items-center gap-2 md:flex">
             {loadingUser ? null : user ? (
-              <button
-                onClick={handleLogout}
-                className="rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800"
-              >
+              <Button variant="secondary" size="sm" onClick={handleLogout}>
                 Cerrar sesión
-              </button>
+              </Button>
             ) : (
               <>
-                <Link
-                  href="/login"
-                  className="rounded-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-                >
+                <Button as="link" href="/login" variant="ghost" size="sm">
                   Iniciar sesión
-                </Link>
+                </Button>
 
-                <Link
-                  href="/register"
-                  className="rounded-full bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
-                >
+                <Button as="link" href="/register" variant="primary" size="sm">
                   Registrarse
-                </Link>
+                </Button>
               </>
             )}
           </div>
@@ -146,7 +159,8 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="rounded-xl p-2 text-gray-700 hover:bg-gray-100 md:hidden"
+            className="rounded-xl p-2 text-ink-muted transition-colors hover:bg-ink/5 hover:text-ink md:hidden"
+            aria-label="Abrir menú"
           >
             <FontAwesomeIcon icon={faBars} className="text-lg" />
           </button>
@@ -156,76 +170,81 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[60] md:hidden">
           <div
-            className="absolute inset-0 bg-black/30"
+            className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
             onClick={() => setMobileMenuOpen(false)}
           />
 
-          <div className="absolute right-0 top-0 h-full w-[82%] max-w-sm bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-4">
-              <span className="text-sm font-semibold text-gray-900">Menú</span>
+          <div className="absolute right-0 top-0 flex h-full w-[85%] max-w-sm flex-col bg-surface-elevated shadow-2xl">
+            <div className="flex items-center justify-between border-b border-line px-5 py-4">
+              <span className="text-sm font-semibold text-ink">Menú</span>
 
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-xl p-2 text-gray-700 hover:bg-gray-100"
+                className="rounded-xl p-2 text-ink-muted transition-colors hover:bg-ink/5 hover:text-ink"
+                aria-label="Cerrar menú"
               >
                 <FontAwesomeIcon icon={faXmark} className="text-lg" />
               </button>
             </div>
 
-            <div className="space-y-3 px-4 py-5">
-              <Link
+            <nav className="flex-1 space-y-1 px-3 py-5">
+              <NavLink
                 href="/"
+                icon={faHouse}
+                active={isInicio}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block rounded-2xl px-4 py-3 text-sm font-medium transition ${
-                  isInicio
-                    ? 'bg-orange-50 text-gray-900'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                block
               >
                 Inicio
-              </Link>
+              </NavLink>
 
-              <Link
+              <NavLink
                 href="/corderitos"
+                icon={faBookOpen}
+                active={isCorderitos}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block rounded-2xl px-4 py-3 text-sm font-medium transition ${
-                  isCorderitos
-                    ? 'bg-orange-50 text-gray-900'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                block
               >
                 Corderitos
-              </Link>
+              </NavLink>
+            </nav>
 
-              <div className="pt-4">
-                {loadingUser ? null : user ? (
-                  <button
-                    onClick={handleLogout}
-                    className="w-full rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white hover:bg-gray-800"
+            <div className="border-t border-line px-5 py-5">
+              {loadingUser ? null : user ? (
+                <Button
+                  variant="secondary"
+                  size="md"
+                  fullWidth
+                  onClick={handleLogout}
+                >
+                  Cerrar sesión
+                </Button>
+              ) : (
+                <div className="space-y-2">
+                  <Button
+                    as="link"
+                    href="/login"
+                    variant="outline"
+                    size="md"
+                    fullWidth
+                    onClick={() => setMobileMenuOpen(false)}
                   >
-                    Cerrar sesión
-                  </button>
-                ) : (
-                  <div className="space-y-3">
-                    <Link
-                      href="/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block rounded-full border border-gray-300 px-5 py-3 text-center text-sm font-medium text-gray-700"
-                    >
-                      Iniciar sesión
-                    </Link>
+                    Iniciar sesión
+                  </Button>
 
-                    <Link
-                      href="/register"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block rounded-full bg-orange-500 px-5 py-3 text-center text-sm font-semibold text-white hover:bg-orange-600"
-                    >
-                      Registrarse
-                    </Link>
-                  </div>
-                )}
-              </div>
+                  <Button
+                    as="link"
+                    href="/register"
+                    variant="primary"
+                    size="md"
+                    fullWidth
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Registrarse
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
