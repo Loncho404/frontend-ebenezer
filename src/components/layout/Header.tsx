@@ -111,17 +111,7 @@ export default function Header() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Principal">
-            <NavLink href="/" icon={faHouse} active={isInicio}>
-              Inicio
-            </NavLink>
-
-            <NavLink href="/corderitos" icon={faBookOpen} active={isCorderitos}>
-              Corderitos
-            </NavLink>
-          </nav>
-
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="ml-auto hidden items-center gap-3 md:flex">
             {loadingUser ? (
               <div className="h-9 w-32 animate-pulse rounded-full bg-line/70" />
             ) : user ? (
@@ -165,7 +155,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="rounded-xl p-2 text-ink-muted transition-colors hover:bg-ink/5 hover:text-ink md:hidden"
+            className="rounded-xl p-2 text-ink-muted transition-colors hover:bg-ink/5 hover:text-ink lg:hidden"
             aria-label="Abrir menú"
             aria-expanded={mobileMenuOpen}
           >
@@ -175,7 +165,7 @@ export default function Header() {
       </header>
 
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] md:hidden" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true">
           <div
             className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
             onClick={() => setMobileMenuOpen(false)}
@@ -196,7 +186,7 @@ export default function Header() {
             </div>
 
             {user && (
-              <div className="flex items-center gap-3 border-b border-line px-5 py-4">
+              <div className="flex items-center gap-3 border-b border-line px-5 py-4 md:hidden">
                 <UserAvatar name={user.username} size="md" />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">{user.username}</p>
@@ -232,7 +222,7 @@ export default function Header() {
               </NavLink>
             </nav>
 
-            <div className="border-t border-line px-5 py-5">
+            <div className="border-t border-line px-5 py-5 md:hidden">
               {loadingUser ? null : user ? (
                 <Button
                   variant="outline"

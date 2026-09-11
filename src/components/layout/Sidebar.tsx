@@ -113,7 +113,7 @@ export default function Sidebar() {
     <aside className="hidden w-64 shrink-0 border-r border-line bg-surface px-4 py-8 lg:block">
       <div className="sticky top-[calc(var(--header-h)+2rem)]">
         <p className="mb-4 px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-subtle">
-          Navegación
+          Menú
         </p>
 
         <nav className="space-y-1" aria-label="Lateral">
