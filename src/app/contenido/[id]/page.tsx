@@ -8,111 +8,97 @@ import Breadcrumbs from '@/components/ui/Breadcrumbs'
 import Hero from '@/components/ui/Hero'
 import Alert from '@/components/ui/Alert'
 import Skeleton from '@/components/ui/Skeleton'
+import { useAuth } from '@/context/AuthContext'
 import {
+  ApiError,
   getContenidoPorTema,
-  getMe,
   getComentarios,
   createComentario,
   downloadProtectedPdf,
   responderComentario,
 } from '@/lib/api'
-
-type Categoria = {
-  id: number
-  nombre: string
-}
-
-type Contenido = {
-  id: number
-  titulo: string
-  descripcion: string
-  youtube_url: string
-  pdf: string
-  categoria?: Categoria
-}
-
-type UserMe = {
-  id: number
-  username: string
-  email: string
-  rol: string
-  puede_descargar_pdfs: boolean
-  puede_comentar: boolean
-  activo_en_plataforma: boolean
-}
-
-type Comentario = {
-  id: number
-  usuario_nombre: string
-  mensaje: string
-  respuesta?: string | null
-  fecha_creacion: string
-}
+import type { Comentario, Contenido } from '@/lib/types'
 
 export default function ContenidoPage() {
   const params = useParams()
-  const id = params?.id as string
+  const temaId = Number(params?.id)
+
+  const { user, isLoggedIn, isAdmin, canComment, canDownloadPdf } = useAuth()
 
   const [contenido, setContenido] = useState<Contenido | null>(null)
-  const [user, setUser] = useState<UserMe | null>(null)
   const [comentarios, setComentarios] = useState<Comentario[]>([])
   const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState('')
 
+  const [downloading, setDownloading] = useState(false)
   const [downloadMessage, setDownloadMessage] = useState('')
   const [downloadError, setDownloadError] = useState('')
 
   /* ===========
-  Cargar contenido, comentarios y usuario
+  Cargar contenido y comentarios del tema.
+  El usuario viene del AuthProvider, no se vuelve a pedir /me aquí.
   =========== */
   useEffect(() => {
+    if (!Number.isFinite(temaId)) return
+
+    let cancelled = false
+
     const cargarTodo = async () => {
       try {
         setLoading(true)
         setError('')
+        setNotFound(false)
 
-        const contenidoData = await getContenidoPorTema(Number(id))
+        const contenidoData = await getContenidoPorTema(temaId)
+        if (cancelled) return
         setContenido(contenidoData)
 
         const comentariosData = await getComentarios(contenidoData.id)
+        if (cancelled) return
         setComentarios(comentariosData)
-
-        const token = localStorage.getItem('access_token')
-
-        if (token) {
-          try {
-            const me = await getMe()
-            setUser(me)
-          } catch (error) {
-            console.error('No se pudo obtener /me', error)
-            setUser(null)
-          }
-        } else {
-          setUser(null)
-        }
       } catch (err) {
+        if (cancelled) return
         console.error(err)
-        setError('No se pudo cargar el contenido.')
+
+        // 404: el tema no existe o no tiene contenido activo
+        if (err instanceof ApiError && err.status === 404) {
+          setNotFound(true)
+        } else {
+          setError('No se pudo cargar el contenido.')
+        }
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
-    if (id) {
-      cargarTodo()
+    cargarTodo()
+
+    return () => {
+      cancelled = true
     }
-  }, [id])
+  }, [temaId])
+
+  /* ===========
+  Limpiar mensajes de descarga si el usuario cambia (login/logout)
+  =========== */
+  useEffect(() => {
+    setDownloadMessage('')
+    setDownloadError('')
+  }, [user?.id])
+
+  const recargarComentarios = async () => {
+    if (!contenido) return
+    setComentarios(await getComentarios(contenido.id))
+  }
 
   /* ===========
   Crear comentario
   =========== */
   const handleSubmitComment = async (mensaje: string) => {
     if (!contenido) return
-
     await createComentario(contenido.id, mensaje)
-
-    const comentariosActualizados = await getComentarios(contenido.id)
-    setComentarios(comentariosActualizados)
+    await recargarComentarios()
   }
 
   /* ===========
@@ -120,32 +106,33 @@ export default function ContenidoPage() {
   =========== */
   const handleDownloadPdf = async (contenidoId: number) => {
     try {
+      setDownloading(true)
       setDownloadMessage('')
       setDownloadError('')
 
-      await downloadProtectedPdf(contenidoId)
+      await downloadProtectedPdf(contenidoId, `${contenido?.titulo ?? 'documento'}.pdf`)
 
       setDownloadMessage('La descarga del PDF se inició correctamente.')
-    } catch (error: any) {
-      console.error(error)
-      setDownloadError(error.message || 'No se pudo descargar el PDF')
+    } catch (err) {
+      console.error(err)
+      setDownloadError(
+        err instanceof Error ? err.message : 'No se pudo descargar el PDF'
+      )
+    } finally {
+      setDownloading(false)
     }
   }
 
   /* ===========
   Responder comentario como admin
   =========== */
-  const handleReplyComment = async (
-    comentarioId: number,
-    respuesta: string
-  ) => {
+  const handleReplyComment = async (comentarioId: number, respuesta: string) => {
     if (!contenido) return
-
     await responderComentario(comentarioId, respuesta)
-
-    const comentariosActualizados = await getComentarios(contenido.id)
-    setComentarios(comentariosActualizados)
+    await recargarComentarios()
   }
+
+  const tema = contenido?.tema
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -153,13 +140,20 @@ export default function ContenidoPage() {
         items={[
           { label: 'Inicio', href: '/' },
           { label: 'Corderitos', href: '/corderitos' },
-          { label: 'Contenido' },
+          ...(tema
+            ? [{ label: tema.nivel_nombre ?? 'Nivel', href: `/corderitos/${tema.nivel}` }]
+            : []),
+          { label: tema?.nombre ?? 'Contenido' },
         ]}
       />
 
       <Hero
-        eyebrow="Contenido del tema"
-        title={contenido?.titulo ?? 'Visualización de contenido'}
+        eyebrow={
+          tema
+            ? [tema.nivel_nombre, `Tema ${tema.orden}`].filter(Boolean).join(' · ')
+            : 'Contenido del tema'
+        }
+        title={tema?.nombre ?? contenido?.titulo ?? 'Contenido del tema'}
         description="Revisa el video, la descripción del tema y descarga el PDF si tienes acceso autorizado."
       />
 
@@ -181,9 +175,9 @@ export default function ContenidoPage() {
         <Alert variant="error" title="No se pudo cargar el contenido">
           {error}
         </Alert>
-      ) : !contenido ? (
-        <Alert variant="warning" title="Contenido no encontrado">
-          No se encontró el contenido solicitado.
+      ) : notFound || !contenido ? (
+        <Alert variant="warning" title="Contenido no disponible">
+          Este tema aún no tiene contenido publicado o fue desactivado.
         </Alert>
       ) : (
         <>
@@ -191,19 +185,19 @@ export default function ContenidoPage() {
             contenidoId={contenido.id}
             titulo={contenido.titulo}
             descripcion={contenido.descripcion}
-            categoria={contenido.categoria}
+            categoria={contenido.categoria ?? undefined}
             youtubeUrl={contenido.youtube_url}
-            canDownloadPdf={
-              user?.rol === 'admin' || !!user?.puede_descargar_pdfs
-            }
+            isLoggedIn={isLoggedIn}
+            canDownloadPdf={canDownloadPdf}
+            downloading={downloading}
             onDownloadPdf={handleDownloadPdf}
           />
 
           <CommentsSection
             comentarios={comentarios}
-            isLoggedIn={!!user}
-            isAdmin={user?.rol === 'admin'}
-            canComment={user?.rol === 'admin' || !!user?.puede_comentar}
+            isLoggedIn={isLoggedIn}
+            isAdmin={isAdmin}
+            canComment={canComment}
             onSubmitComment={handleSubmitComment}
             onReplyComment={handleReplyComment}
           />

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
 import { loginUser, registerUser } from '@/lib/api'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -17,6 +18,7 @@ import Alert from '@/components/ui/Alert'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { login } = useAuth()
 
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -92,15 +94,11 @@ export default function RegisterPage() {
       await registerUser(username, email, password)
 
       const loginData = await loginUser(username, password)
-
-      localStorage.setItem('access_token', loginData.access)
-      localStorage.setItem('refresh_token', loginData.refresh)
-
-      window.dispatchEvent(new Event('authChanged'))
+      await login(loginData)
 
       router.push('/')
-    } catch (err: any) {
-      setError(err.message || 'No se pudo crear la cuenta.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo crear la cuenta.')
     } finally {
       setLoading(false)
     }

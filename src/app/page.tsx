@@ -12,17 +12,7 @@ import {
 import Hero from '@/components/ui/Hero'
 import MonthlyCalendarCard from '@/components/ui/MonthlyCalendarCard'
 import { getCalendarioActivo } from '@/lib/api'
-
-type CalendarioActivo = {
-  id: number
-  titulo: string
-  imagen: string
-  mes: number
-  mes_nombre: string
-  anio: number
-  activo: boolean
-  fecha_creacion: string
-}
+import type { CalendarioActivo } from '@/lib/types'
 
 export default function HomePage() {
   const [calendario, setCalendario] = useState<CalendarioActivo | null>(null)

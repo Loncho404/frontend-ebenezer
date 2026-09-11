@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCalendarDays } from '@fortawesome/free-solid-svg-icons'
+import { BACKEND_URL } from '@/lib/api'
 
 type MonthlyCalendarCardProps = {
   titulo: string
@@ -14,18 +15,14 @@ export default function MonthlyCalendarCard({
   mesNombre,
   anio,
 }: MonthlyCalendarCardProps) {
-  const backendUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
-
-  let imageUrl = imagen
-
-  if (imagen.startsWith('http')) {
-    imageUrl = imagen
-  } else if (imagen.startsWith('/calendarios')) {
-    imageUrl = imagen
-  } else {
-    imageUrl = `${backendUrl}${imagen}`
-  }
+  /* ===========
+  `imagen` puede ser una URL absoluta, una ruta servida por el front
+  (/calendarios/...) o una ruta de media del backend (/media/...)
+  =========== */
+  const imageUrl =
+    imagen.startsWith('http') || imagen.startsWith('/calendarios')
+      ? imagen
+      : `${BACKEND_URL}${imagen.startsWith('/') ? '' : '/'}${imagen}`
 
   return (
     <section className="mx-auto max-w-4xl rounded-[var(--radius-xl)] border border-line bg-surface-elevated p-6 shadow-[var(--shadow-card)] sm:p-8">

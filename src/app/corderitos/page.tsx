@@ -8,13 +8,7 @@ import NavItemCard from '@/components/ui/NavItemCard'
 import Alert from '@/components/ui/Alert'
 import EmptyState from '@/components/ui/EmptyState'
 import Skeleton from '@/components/ui/Skeleton'
-
-type Nivel = {
-  id: number
-  nombre: string
-  orden: number
-  activo?: boolean
-}
+import type { Nivel } from '@/lib/types'
 
 export default function CorderitosPage() {
   const [niveles, setNiveles] = useState<Nivel[]>([])

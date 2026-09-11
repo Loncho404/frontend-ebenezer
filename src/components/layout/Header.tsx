@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
-import { usePathname } from 'next/navigation'
-import { getMe } from '@/lib/api'
+import { useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faBars,
@@ -14,16 +14,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import Button from '@/components/ui/Button'
-
-type UserMe = {
-  id: number
-  username: string
-  email: string
-  rol: string
-  puede_descargar_pdfs: boolean
-  puede_comentar: boolean
-  activo_en_plataforma: boolean
-}
 
 type NavLinkProps = {
   href: string
@@ -56,8 +46,8 @@ function NavLink({ href, icon, active, children, onClick, block }: NavLinkProps)
 export default function Header() {
   const pathname = usePathname()
 
-  const [user, setUser] = useState<UserMe | null>(null)
-  const [loadingUser, setLoadingUser] = useState(true)
+  const router = useRouter()
+  const { user, loading: loadingUser, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const isInicio = pathname === '/'
@@ -65,52 +55,12 @@ export default function Header() {
     pathname.startsWith('/corderitos') || pathname.startsWith('/contenido')
 
   /* ===========
-  Cargar usuario autenticado desde /me
-  =========== */
-  const cargarUsuario = async () => {
-    try {
-      const token = localStorage.getItem('access_token')
-
-      if (!token) {
-        setUser(null)
-        return
-      }
-
-      const me = await getMe()
-      setUser(me)
-    } catch (error) {
-      console.error('No se pudo cargar el usuario del header', error)
-      setUser(null)
-    } finally {
-      setLoadingUser(false)
-    }
-  }
-
-  /* ===========
-  Escuchar cambios de autenticación
-  =========== */
-  useEffect(() => {
-    cargarUsuario()
-
-    const handleAuthChanged = () => {
-      cargarUsuario()
-    }
-
-    window.addEventListener('authChanged', handleAuthChanged)
-
-    return () => {
-      window.removeEventListener('authChanged', handleAuthChanged)
-    }
-  }, [])
-
-  /* ===========
   Cerrar sesión
   =========== */
   const handleLogout = () => {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    window.dispatchEvent(new Event('authChanged'))
-    window.location.href = '/'
+    logout()
+    setMobileMenuOpen(false)
+    router.push('/')
   }
 
   return (

@@ -13,14 +13,12 @@ import Button from '@/components/ui/Button'
 import Textarea from '@/components/ui/Textarea'
 import Alert from '@/components/ui/Alert'
 import Badge from '@/components/ui/Badge'
+import type { Comentario } from '@/lib/types'
 
-type Comentario = {
-  id: number
-  usuario_nombre: string
-  mensaje: string
-  respuesta?: string | null
-  fecha_creacion: string
-}
+const dateFormatter = new Intl.DateTimeFormat('es-CL', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
 
 type CommentsSectionProps = {
   comentarios: Comentario[]
@@ -71,8 +69,8 @@ export default function CommentsSection({
       setError('')
       await onSubmitComment(mensaje)
       setMensaje('')
-    } catch (err: any) {
-      setError(err.message || 'No se pudo publicar el comentario.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo publicar el comentario.')
     } finally {
       setLoading(false)
     }
@@ -109,8 +107,8 @@ export default function CommentsSection({
       await onReplyComment(comentarioId, replyText)
       setReplyOpenId(null)
       setReplyText('')
-    } catch (err: any) {
-      setReplyError(err.message || 'No se pudo responder el comentario.')
+    } catch (err) {
+      setReplyError(err instanceof Error ? err.message : 'No se pudo responder el comentario.')
     } finally {
       setReplyLoading(false)
     }
@@ -161,11 +159,11 @@ export default function CommentsSection({
                     </p>
 
                     <p className="text-xs text-ink-subtle">
-                      {new Date(comentario.fecha_creacion).toLocaleString()}
+                      {dateFormatter.format(new Date(comentario.fecha_creacion))}
                     </p>
                   </div>
 
-                  <p className="mt-2 text-sm leading-6 text-ink-muted">
+                  <p className="mt-2 whitespace-pre-line break-words text-sm leading-6 text-ink-muted">
                     {comentario.mensaje}
                   </p>
                 </div>
@@ -177,7 +175,7 @@ export default function CommentsSection({
                     <FontAwesomeIcon icon={faShield} className="text-[9px]" />
                     Respuesta del admin
                   </Badge>
-                  <p className="mt-1 text-sm leading-6 text-ink">
+                  <p className="mt-1 whitespace-pre-line break-words text-sm leading-6 text-ink">
                     {comentario.respuesta}
                   </p>
                 </div>

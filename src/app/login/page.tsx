@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
 import { loginUser } from '@/lib/api'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
@@ -11,6 +12,7 @@ import Alert from '@/components/ui/Alert'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -34,14 +36,11 @@ export default function LoginPage() {
       setError('')
 
       const data = await loginUser(username, password)
-
-      localStorage.setItem('access_token', data.access)
-      localStorage.setItem('refresh_token', data.refresh)
-      window.dispatchEvent(new Event('authChanged'))
+      await login(data)
 
       router.push('/')
-    } catch (err: any) {
-      setError(err.message || 'No se pudo iniciar sesión.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo iniciar sesión.')
     } finally {
       setLoading(false)
     }

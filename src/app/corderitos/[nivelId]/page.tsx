@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { faBookOpen } from '@fortawesome/free-solid-svg-icons'
-import { getTemasPorNivel } from '@/lib/api'
+import { getNiveles, getTemasPorNivel } from '@/lib/api'
+import type { Nivel, Tema } from '@/lib/types'
 import Breadcrumbs from '@/components/ui/Breadcrumbs'
 import Hero from '@/components/ui/Hero'
 import NavItemCard from '@/components/ui/NavItemCard'
@@ -11,44 +12,59 @@ import Alert from '@/components/ui/Alert'
 import EmptyState from '@/components/ui/EmptyState'
 import Skeleton from '@/components/ui/Skeleton'
 
-type Tema = {
-  id: number
-  nombre: string
-  orden: number
-  activo?: boolean
-}
-
 export default function NivelPage() {
   const params = useParams()
-  const nivelId = params?.nivelId as string
+  const nivelId = Number(params?.nivelId)
 
+  const [nivel, setNivel] = useState<Nivel | null>(null)
   const [temas, setTemas] = useState<Tema[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   /* ===========
-  Cargar temas del nivel seleccionado
+  Cargar temas del nivel seleccionado y el nombre del nivel.
+  Los temas traen `nivel_nombre`; si el nivel no tiene temas, se busca en el listado.
   =========== */
   useEffect(() => {
-    const cargarTemas = async () => {
+    if (!Number.isFinite(nivelId)) return
+
+    let cancelled = false
+
+    const cargar = async () => {
       try {
         setLoading(true)
         setError('')
 
-        const data = await getTemasPorNivel(Number(nivelId))
-        setTemas(data)
+        const temasData = await getTemasPorNivel(nivelId)
+        if (cancelled) return
+        setTemas(temasData)
+
+        const nombreDesdeTemas = temasData[0]?.nivel_nombre
+        if (nombreDesdeTemas) {
+          setNivel({ id: nivelId, nombre: nombreDesdeTemas, orden: 0 })
+          return
+        }
+
+        const nivelesData = await getNiveles().catch(() => [] as Nivel[])
+        if (cancelled) return
+        setNivel(nivelesData.find((n) => n.id === nivelId) ?? null)
       } catch (err) {
+        if (cancelled) return
         console.error(err)
         setError('No se pudieron cargar los temas.')
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
-    if (nivelId) {
-      cargarTemas()
+    cargar()
+
+    return () => {
+      cancelled = true
     }
   }, [nivelId])
+
+  const nombreNivel = nivel?.nombre ?? `Nivel ${nivelId}`
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
@@ -56,13 +72,13 @@ export default function NivelPage() {
         items={[
           { label: 'Inicio', href: '/' },
           { label: 'Corderitos', href: '/corderitos' },
-          { label: `Nivel ${nivelId}` },
+          { label: nombreNivel },
         ]}
       />
 
       <Hero
         eyebrow="Nivel seleccionado"
-        title={`Temas del nivel ${nivelId}`}
+        title={nombreNivel}
         description="Selecciona un tema para ver su contenido completo: video, descripción y descarga de PDF."
       />
 

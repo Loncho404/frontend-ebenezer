@@ -5,14 +5,12 @@ import {
   faFilePdf,
   faArrowUpRightFromSquare,
   faLock,
+  faRightToBracket,
 } from '@fortawesome/free-solid-svg-icons'
+import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
-
-type Categoria = {
-  id: number
-  nombre: string
-}
+import type { Categoria } from '@/lib/types'
 
 type ContentCardProps = {
   contenidoId: number
@@ -20,7 +18,9 @@ type ContentCardProps = {
   descripcion: string
   categoria?: Categoria
   youtubeUrl?: string
+  isLoggedIn: boolean
   canDownloadPdf: boolean
+  downloading?: boolean
   onDownloadPdf: (contenidoId: number) => Promise<void>
 }
 
@@ -35,7 +35,8 @@ function getYoutubeEmbedUrl(url?: string) {
       return `https://www.youtube.com/embed/${videoId}`
     }
 
-    const videoId = parsedUrl.searchParams.get('v')
+    const pathMatch = /^\/(?:shorts|embed|live)\/([^/?]+)/.exec(parsedUrl.pathname)
+    const videoId = parsedUrl.searchParams.get('v') ?? pathMatch?.[1]
     if (!videoId) return ''
 
     return `https://www.youtube.com/embed/${videoId}`
@@ -50,7 +51,9 @@ export default function ContentCard({
   descripcion,
   categoria,
   youtubeUrl,
+  isLoggedIn,
   canDownloadPdf,
+  downloading = false,
   onDownloadPdf,
 }: ContentCardProps) {
   const embedUrl = getYoutubeEmbedUrl(youtubeUrl)
@@ -97,11 +100,20 @@ export default function ContentCard({
           <Button
             variant="primary"
             size="md"
+            loading={downloading}
             onClick={() => onDownloadPdf(contenidoId)}
             leftIcon={<FontAwesomeIcon icon={faFilePdf} />}
           >
-            Descargar PDF
+            {downloading ? 'Descargando...' : 'Descargar PDF'}
           </Button>
+        ) : !isLoggedIn ? (
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 text-sm font-medium text-ink-muted transition-colors hover:text-brand-600"
+          >
+            <FontAwesomeIcon icon={faRightToBracket} className="text-xs" />
+            Inicia sesión para descargar el PDF
+          </Link>
         ) : (
           <p className="inline-flex items-center gap-2 text-sm text-ink-subtle">
             <FontAwesomeIcon icon={faLock} className="text-xs" />
