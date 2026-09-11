@@ -77,9 +77,14 @@ export default function NivelPage() {
       />
 
       <Hero
+        compact
         eyebrow="Nivel seleccionado"
         title={nombreNivel}
-        description="Selecciona un tema para ver su contenido completo: video, descripción y descarga de PDF."
+        description={
+          temas.length > 0
+            ? `${temas.length} ${temas.length === 1 ? 'tema disponible' : 'temas disponibles'} · video, descripción y PDF.`
+            : 'Selecciona un tema para ver su clase completa.'
+        }
       />
 
       {loading ? (

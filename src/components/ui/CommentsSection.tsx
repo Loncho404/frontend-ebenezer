@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCommentDots,
@@ -13,6 +14,7 @@ import Button from '@/components/ui/Button'
 import Textarea from '@/components/ui/Textarea'
 import Alert from '@/components/ui/Alert'
 import Badge from '@/components/ui/Badge'
+import UserAvatar from '@/components/ui/UserAvatar'
 import type { Comentario } from '@/lib/types'
 
 const dateFormatter = new Intl.DateTimeFormat('es-CL', {
@@ -25,17 +27,9 @@ type CommentsSectionProps = {
   canComment: boolean
   isLoggedIn: boolean
   isAdmin: boolean
+  loginHref?: string
   onSubmitComment: (mensaje: string) => Promise<void>
   onReplyComment: (comentarioId: number, respuesta: string) => Promise<void>
-}
-
-function getInitials(name: string): string {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
 }
 
 export default function CommentsSection({
@@ -43,6 +37,7 @@ export default function CommentsSection({
   canComment,
   isLoggedIn,
   isAdmin,
+  loginHref = '/login',
   onSubmitComment,
   onReplyComment,
 }: CommentsSectionProps) {
@@ -148,9 +143,7 @@ export default function CommentsSection({
               className="rounded-[var(--radius-lg)] border border-line bg-surface p-5"
             >
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold uppercase text-brand-700 ring-2 ring-inset ring-surface-elevated">
-                  {getInitials(comentario.usuario_nombre)}
-                </span>
+                <UserAvatar name={comentario.usuario_nombre} size="md" />
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
@@ -230,7 +223,10 @@ export default function CommentsSection({
 
       {!isLoggedIn ? (
         <Alert variant="info">
-          Debes iniciar sesión para publicar comentarios.
+          <Link href={loginHref} className="font-semibold underline underline-offset-2 hover:text-brand-600">
+            Inicia sesión
+          </Link>{' '}
+          para publicar comentarios.
         </Alert>
       ) : canComment ? (
         <div className="space-y-4 border-t border-line pt-6">
@@ -256,7 +252,7 @@ export default function CommentsSection({
         </div>
       ) : (
         <Alert variant="warning">
-          Tu usuario no tiene permisos para comentar en este contenido.
+          Tu cuenta aún no tiene permiso para comentar. Un administrador puede habilitarlo.
         </Alert>
       )}
     </section>

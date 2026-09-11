@@ -5,6 +5,8 @@ type HeroProps = {
   title: string
   description?: string
   actions?: ReactNode
+  /* compact: menos alto, para páginas interiores donde el contenido es lo importante */
+  compact?: boolean
   className?: string
 }
 
@@ -13,11 +15,16 @@ export default function Hero({
   title,
   description,
   actions,
+  compact = false,
   className = '',
 }: HeroProps) {
+  const padding = compact
+    ? 'px-6 py-7 sm:px-8 sm:py-8 lg:px-10'
+    : 'px-6 py-10 sm:px-10 sm:py-14 lg:px-12 lg:py-16'
+
   return (
     <section
-      className={`relative isolate mb-8 overflow-hidden rounded-[var(--radius-2xl)] px-6 py-10 shadow-[var(--shadow-card)] sm:px-10 sm:py-14 lg:px-12 lg:py-16 ${className}`}
+      className={`relative isolate mb-8 overflow-hidden rounded-[var(--radius-2xl)] shadow-[var(--shadow-card)] ${padding} ${className}`}
       style={{
         background:
           'linear-gradient(125deg, var(--color-hero-from) 0%, var(--color-hero-via) 55%, var(--color-hero-to) 100%)',
@@ -39,12 +46,16 @@ export default function Hero({
           </p>
         )}
 
-        <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+        <h1
+          className={`mt-3 font-bold tracking-tight text-white ${
+            compact ? 'text-xl sm:text-2xl lg:text-3xl' : 'text-2xl sm:text-3xl lg:text-4xl'
+          }`}
+        >
           {title}
         </h1>
 
         {description && (
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-200 sm:text-base">
+          <p className={`max-w-2xl text-sm leading-relaxed text-slate-200 sm:text-base ${compact ? 'mt-2' : 'mt-4'}`}>
             {description}
           </p>
         )}

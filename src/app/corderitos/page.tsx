@@ -42,7 +42,7 @@ export default function CorderitosPage() {
       <Hero
         eyebrow="Sección de Corderitos"
         title="Niveles de Corderitos"
-        description="Selecciona un nivel para acceder a sus temas y revisar el contenido disponible de forma ordenada."
+        description="Cada nivel agrupa una serie de temas. Elige uno para ver sus clases en video y el material de apoyo."
       />
 
       {loading ? (

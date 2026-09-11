@@ -148,13 +148,14 @@ export default function ContenidoPage() {
       />
 
       <Hero
+        compact
         eyebrow={
           tema
             ? [tema.nivel_nombre, `Tema ${tema.orden}`].filter(Boolean).join(' · ')
             : 'Contenido del tema'
         }
         title={tema?.nombre ?? contenido?.titulo ?? 'Contenido del tema'}
-        description="Revisa el video, la descripción del tema y descarga el PDF si tienes acceso autorizado."
+        description={contenido?.categoria ? `Categoría: ${contenido.categoria.nombre}` : undefined}
       />
 
       {downloadMessage && (
@@ -183,6 +184,7 @@ export default function ContenidoPage() {
         <>
           <ContentCard
             contenidoId={contenido.id}
+            temaId={temaId}
             titulo={contenido.titulo}
             descripcion={contenido.descripcion}
             categoria={contenido.categoria ?? undefined}
@@ -195,6 +197,7 @@ export default function ContenidoPage() {
 
           <CommentsSection
             comentarios={comentarios}
+            loginHref={`/login?next=${encodeURIComponent(`/contenido/${temaId}`)}`}
             isLoggedIn={isLoggedIn}
             isAdmin={isAdmin}
             canComment={canComment}

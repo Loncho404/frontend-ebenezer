@@ -47,19 +47,20 @@ function SkeletonGrid({ count = 6 }: { count?: number }) {
 
 function SkeletonContent() {
   return (
-    <div className="rounded-[var(--radius-xl)] border border-line bg-surface-elevated p-6 shadow-[var(--shadow-card)] sm:p-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex-1 space-y-3">
-          <div className="h-6 w-2/3 animate-pulse rounded-full bg-line/70" />
+    <div className="overflow-hidden rounded-[var(--radius-xl)] border border-line bg-surface-elevated shadow-[var(--shadow-card)]">
+      <div className="aspect-video w-full animate-pulse bg-line/70" />
+      <div className="p-6 sm:p-8">
+        <div className="h-6 w-24 animate-pulse rounded-full bg-line/70" />
+        <div className="mt-4 h-6 w-2/3 animate-pulse rounded-full bg-line/70" />
+        <div className="mt-4 space-y-2">
           <div className="h-3 w-full animate-pulse rounded-full bg-line/60" />
+          <div className="h-3 w-11/12 animate-pulse rounded-full bg-line/60" />
           <div className="h-3 w-5/6 animate-pulse rounded-full bg-line/60" />
         </div>
-        <div className="h-7 w-24 animate-pulse rounded-full bg-line/70" />
       </div>
-
-      <div className="mt-6 aspect-video w-full animate-pulse rounded-[var(--radius-lg)] bg-line/70" />
-
-      <div className="mt-6 h-11 w-40 animate-pulse rounded-full bg-line/70" />
+      <div className="border-t border-line px-6 py-4 sm:px-8">
+        <div className="h-11 w-52 animate-pulse rounded-full bg-line/70" />
+      </div>
     </div>
   )
 }

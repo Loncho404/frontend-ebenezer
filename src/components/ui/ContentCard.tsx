@@ -6,6 +6,7 @@ import {
   faArrowUpRightFromSquare,
   faLock,
   faRightToBracket,
+  faVideo,
 } from '@fortawesome/free-solid-svg-icons'
 import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
@@ -14,6 +15,8 @@ import type { Categoria } from '@/lib/types'
 
 type ContentCardProps = {
   contenidoId: number
+  /* id del tema: se usa para volver a esta página tras iniciar sesión */
+  temaId?: number
   titulo: string
   descripcion: string
   categoria?: Categoria
@@ -47,6 +50,7 @@ function getYoutubeEmbedUrl(url?: string) {
 
 export default function ContentCard({
   contenidoId,
+  temaId,
   titulo,
   descripcion,
   categoria,
@@ -58,41 +62,47 @@ export default function ContentCard({
 }: ContentCardProps) {
   const embedUrl = getYoutubeEmbedUrl(youtubeUrl)
 
+  const loginHref = `/login?next=${encodeURIComponent(`/contenido/${temaId ?? contenidoId}`)}`
+
   return (
     <article className="overflow-hidden rounded-[var(--radius-xl)] border border-line bg-surface-elevated shadow-[var(--shadow-card)]">
-      <div className="p-6 sm:p-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0 flex-1">
-            {categoria && (
-              <Badge variant="brand" size="md" className="mb-3">
-                {categoria.nombre}
-              </Badge>
-            )}
-
-            <h3 className="text-xl font-bold tracking-tight text-ink sm:text-2xl">
-              {titulo}
-            </h3>
-
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-ink-muted">
-              {descripcion}
-            </p>
+      {embedUrl && (
+        <div className="bg-black">
+          <div className="mx-auto aspect-video w-full max-w-4xl">
+            <iframe
+              src={embedUrl}
+              title={titulo}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              loading="lazy"
+              className="h-full w-full"
+            />
           </div>
         </div>
+      )}
 
-        {embedUrl && (
-          <div className="mt-6 overflow-hidden rounded-[var(--radius-lg)] border border-line bg-black">
-            <div className="aspect-video w-full">
-              <iframe
-                src={embedUrl}
-                title={titulo}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="h-full w-full"
-              />
-            </div>
-          </div>
-        )}
+      <div className="p-6 sm:p-8">
+        <div className="flex flex-wrap items-center gap-2">
+          {categoria && (
+            <Badge variant="brand" size="md">
+              {categoria.nombre}
+            </Badge>
+          )}
+          <Badge variant="neutral" size="md">
+            <FontAwesomeIcon icon={faVideo} className="text-[10px]" />
+            Clase en video
+          </Badge>
+        </div>
+
+        <h3 className="mt-4 text-xl font-bold tracking-tight text-ink sm:text-2xl">
+          {titulo}
+        </h3>
+
+        {/* whitespace-pre-line respeta los párrafos escritos desde el admin */}
+        <div className="mt-4 max-w-3xl whitespace-pre-line text-[15px] leading-7 text-ink-muted">
+          {descripcion}
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 border-t border-line bg-surface-muted/40 px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
@@ -104,11 +114,11 @@ export default function ContentCard({
             onClick={() => onDownloadPdf(contenidoId)}
             leftIcon={<FontAwesomeIcon icon={faFilePdf} />}
           >
-            {downloading ? 'Descargando...' : 'Descargar PDF'}
+            {downloading ? 'Descargando...' : 'Descargar material en PDF'}
           </Button>
         ) : !isLoggedIn ? (
           <Link
-            href="/login"
+            href={loginHref}
             className="inline-flex items-center gap-2 text-sm font-medium text-ink-muted transition-colors hover:text-brand-600"
           >
             <FontAwesomeIcon icon={faRightToBracket} className="text-xs" />
@@ -117,7 +127,7 @@ export default function ContentCard({
         ) : (
           <p className="inline-flex items-center gap-2 text-sm text-ink-subtle">
             <FontAwesomeIcon icon={faLock} className="text-xs" />
-            No tienes permisos para descargar el PDF.
+            Tu cuenta aún no tiene permiso para descargar el PDF.
           </p>
         )}
 

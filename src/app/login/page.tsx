@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { useNextPath } from '@/lib/useNextPath'
 import { loginUser } from '@/lib/api'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
@@ -11,14 +12,32 @@ import Button from '@/components/ui/Button'
 import Alert from '@/components/ui/Alert'
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, user, loading: loadingUser } = useAuth()
+  const nextPath = useNextPath('/')
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  /* ===========
+  Si ya hay sesión, no tiene sentido mostrar el login
+  =========== */
+  useEffect(() => {
+    if (!loadingUser && user) {
+      router.replace(nextPath)
+    }
+  }, [loadingUser, user, nextPath, router])
 
   /* ===========
   Iniciar sesión y guardar tokens en localStorage
@@ -38,7 +57,7 @@ export default function LoginPage() {
       const data = await loginUser(username, password)
       await login(data)
 
-      router.push('/')
+      router.replace(nextPath)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo iniciar sesión.')
     } finally {
@@ -96,7 +115,7 @@ export default function LoginPage() {
             </Button>
 
             <Link
-              href="/register"
+              href={nextPath !== '/' ? `/register?next=${encodeURIComponent(nextPath)}` : '/register'}
               className="text-center text-sm font-medium text-ink-muted transition-colors hover:text-brand-600 sm:text-left"
             >
               ¿No tienes cuenta? Regístrate

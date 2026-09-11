@@ -1,9 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { useNextPath } from '@/lib/useNextPath'
 import { loginUser, registerUser } from '@/lib/api'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -17,8 +18,17 @@ import Button from '@/components/ui/Button'
 import Alert from '@/components/ui/Alert'
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterForm />
+    </Suspense>
+  )
+}
+
+function RegisterForm() {
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, user, loading: loadingUser } = useAuth()
+  const nextPath = useNextPath('/')
 
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -27,6 +37,12 @@ export default function RegisterPage() {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!loadingUser && user) {
+      router.replace(nextPath)
+    }
+  }, [loadingUser, user, nextPath, router])
 
   /* ===========
   Reglas básicas de validación para la contraseña
@@ -96,7 +112,7 @@ export default function RegisterPage() {
       const loginData = await loginUser(username, password)
       await login(loginData)
 
-      router.push('/')
+      router.replace(nextPath)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo crear la cuenta.')
     } finally {
@@ -115,7 +131,8 @@ export default function RegisterPage() {
             Crear cuenta
           </h1>
           <p className="mt-3 text-sm leading-6 text-ink-muted">
-            Regístrate para acceder a la plataforma de contenidos.
+            Crea tu cuenta para comentar las clases. Un administrador podrá habilitarte
+            la descarga del material en PDF.
           </p>
         </div>
 
@@ -190,7 +207,7 @@ export default function RegisterPage() {
             </Button>
 
             <Link
-              href="/login"
+              href={nextPath !== '/' ? `/login?next=${encodeURIComponent(nextPath)}` : '/login'}
               className="text-center text-sm font-medium text-ink-muted transition-colors hover:text-brand-600 sm:text-left"
             >
               ¿Ya tienes cuenta? Inicia sesión
